@@ -12,12 +12,51 @@ module.exports = associator;
 
 
 
-function associator(source, target, minTarget,  maxTarget) {
-    var t = new Map();
-    target.map(function(key) {
-       t.set(key, false);
+function associator(links, options) {
+    var options=options || {};
+    var minTarget=options.minTarget || 0;
+    var maxTarget=options.maxTarget || 2;
+    
+    
+    var sources=[];
+    for (var key in links) {
+        sources.push(
+            {
+                sourceID: key,
+                possibleTargets: links[key]
+                currentTargetPosition: -1,
+                currentTargets: []
+            }
+        );
+    }
+    
+    var targets = {};
+    sources.map(function(source) {
+        source.possibleTargets.map(function(targetID) {
+            if (! targets[targetID]) {
+                targets[targetID]={
+                    isUsed: false
+                };
+            }
+        });
     });
-    target = t;
+    
+    var currentSource=0;
+    var currentTotalAssignedTargets=0;
+    
+    while () {
+        
+        // can we for the current source that we are evaluating still add a child ?
+        var source=sources[currentSource];
+        
+        
+    }
+    
+    
+    
+    return;
+    
+
     var sourcePos = {};
     for(var key in source) {
         sourcePos[key] = 0;
@@ -177,4 +216,7 @@ function getScore() {
     return 100;
 }
 
-associator({a:[1,2], b:[1, 2, 3, 4, 5, 6], c:[5, 6]}, [1, 2, 3, 4, 5, 6], 0, 2);
+associator({a:[1,2], b:[1, 2, 3, 4, 5, 6], c:[5, 6]}, {
+    minTarget: 0,
+    maxTarget: 2
+});
