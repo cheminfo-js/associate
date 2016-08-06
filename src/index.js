@@ -1,6 +1,10 @@
 'use strict';
 
 module.exports = associator;
+
+var combinate = require('./combinate.js')
+
+
 /**
  * @param source = {a:[], b:[], c:[], ...}
  * @param target = [1,2,3,4,5,6]
@@ -9,7 +13,7 @@ module.exports = associator;
  * @returns {*} return the top 3 best association
  */
 
-
+var DEBUG=true;
 
 
 function associator(links, options) {
@@ -23,12 +27,15 @@ function associator(links, options) {
         sources.push(
             {
                 sourceID: key,
-                possibleTargets: links[key]
-                currentTargetPosition: -1,
-                currentTargets: []
+                possibleTargets: combinate(links[key], minTarget, maxTarget),
+                currentTargetPosition: 0,
+                currentTotalTargetsAssigned: new Array(sources.length),
+                currentTotalScore:  new Array(sources.length)
             }
         );
     }
+    
+    console.log(JSON.stringify(sources,"   "));
     
     var targets = {};
     sources.map(function(source) {
@@ -41,18 +48,45 @@ function associator(links, options) {
         });
     });
     
+
+    
     var currentSource=0;
     var currentTotalAssignedTargets=0;
     
-    while () {
-        
+    var limit=50;
+    var counter=0;
+    while (limit-- > 0 && currentSource>=0) {
         // can we for the current source that we are evaluating still add a child ?
-        var source=sources[currentSource];
-        
-        
+        while(currentSource<(sources.length-1)) {
+            currentSource++;
+            sources[currentSource].currentTargetPosition=0;
+        }
+        // we should now deal with this possibility ...
+        //if (DEBUG) debugCurrentTargets(sources);
+
+        // currentTotalTargetsAssigned: new Array(sources.length),
+        // currentTotalScore:  new Array(sources.length)
+
+        counter++;
+        // need to increment the position and go back if we reach the end
+        do {
+            sources[currentSource].currentTargetPosition++;
+        } while (
+            sources[currentSource].currentTargetPosition===sources[currentSource].possibleTargets.length &&
+                --currentSource>=0
+            )
     }
     
+    console.log("Total: ",counter)
     
+    function debugCurrentTargets(sources) {
+        console.log('----------- Source current association ----------')
+        for (var i=0; i<sources.length; i++) {
+            var source=sources[i];
+            console.log(source.currentTargetPosition, source.possibleTargets[source.currentTargetPosition]);
+        }
+    }
+
     
     return;
     
@@ -216,7 +250,3 @@ function getScore() {
     return 100;
 }
 
-associator({a:[1,2], b:[1, 2, 3, 4, 5, 6], c:[5, 6]}, {
-    minTarget: 0,
-    maxTarget: 2
-});
