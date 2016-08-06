@@ -9,7 +9,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         }); 
-        result.should.equal(0);
+        result.stat.numberHits.should.equal(0);
     });
 
     it('with overlapping targets', function () {
@@ -17,7 +17,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(0);
+        result.stat.numberHits.should.equal(0);
     });
 
     it('with no overlapping and one result', function () {
@@ -25,7 +25,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(1);
+        result.stat.numberHits.should.equal(1);
     });
 
     it('with no overlapping and one result but couple of branches', function () {
@@ -33,7 +33,7 @@ describe('Test the associator', function () {
             minTarget: 1,
             maxTarget: 2
         });
-        result.should.equal(1);
+        result.stat.numberHits.should.equal(1);
     });
 
     it('with no overlapping and one result but many branches', function () {
@@ -41,7 +41,7 @@ describe('Test the associator', function () {
             minTarget: 0,
             maxTarget: 2
         });
-        result.should.equal(1);
+        result.stat.numberHits.should.equal(1);
     });
 
     it('with one overlapping and impossible result', function () {
@@ -49,7 +49,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(0);
+        result.stat.numberHits.should.equal(0);
     });
 
     it('with 2 overlapping and possible results', function () {
@@ -57,7 +57,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(1);
+        result.stat.numberHits.should.equal(1);
     });
 
 
@@ -66,7 +66,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(0);
+        result.stat.numberHits.should.equal(0);
     });
 
     it('Small test with many assignment', function () {
@@ -78,7 +78,7 @@ describe('Test the associator', function () {
             minTarget: 2,
             maxTarget: 2
         });
-        result.should.equal(6);
+        result.stat.numberHits.should.equal(6);
     });
 
     it('Small test with many assignment and minTarget=0', function () {
@@ -90,7 +90,7 @@ describe('Test the associator', function () {
                 minTarget: 0,
                 maxTarget: 2
             });
-        result.should.equal(6);
+        result.stat.numberHits.should.equal(6);
     });
 
     it('Small test with many assignment and 3 min / max', function () {
@@ -102,7 +102,7 @@ describe('Test the associator', function () {
                 minTarget: 3,
                 maxTarget: 3
             });
-        result.should.equal(20);
+        result.stat.numberHits.should.equal(20);
     });
 
     it('Large test with many assignment and 2 min / max - 45*28*15*6 possibilities', function () {
@@ -118,7 +118,7 @@ describe('Test the associator', function () {
                 minTarget: 2,
                 maxTarget: 2
             });
-        result.should.equal(113400);
+        result.stat.numberHits.should.equal(113400);
     });
 
     it('Large test with many assignment and 0 min / 2 max - 45*28*15*6 possibilities', function () {
@@ -134,7 +134,7 @@ describe('Test the associator', function () {
                 minTarget: 0,
                 maxTarget: 2
             });
-        result.should.equal(113400);
+        result.stat.numberHits.should.equal(113400);
     });
     
 
@@ -148,7 +148,7 @@ describe('Test the associator', function () {
                 minTarget: 0,
                 maxTarget: 2
             });
-        result.should.equal(90);
+        result.stat.numberHits.should.equal(90);
     });
 
     it('Large (10) sequential set', function () {
@@ -168,7 +168,7 @@ describe('Test the associator', function () {
                 minTarget: 0,
                 maxTarget: 2
             });
-        result.should.equal(1);
+        result.stat.numberHits.should.equal(1);
     });
     
     
