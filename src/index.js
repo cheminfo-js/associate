@@ -13,7 +13,7 @@ var combinate = require('./combinate.js')
  * @returns {*} return the top 3 best association
  */
 
-var DEBUG=0;
+var DEBUG=1;
 
 
 function associator(links, options) {
@@ -28,8 +28,13 @@ function associator(links, options) {
     var options=options || {};
     var minTarget=options.minTarget || 0;
     var maxTarget=options.maxTarget || 2;
+    var maxCounts=options.maxCounts;
+    var sizeCounts=maxTarget-minTarget+1;
+    if (options.maxCounts && options.maxCounts.length!==sizeCounts) {
+        throw new Error('The maxCounts parameter must have exactly the length '+sizeCounts);
+    }
     
-    
+    var currentCounts=new Array(sizeCounts).fill(0);
     
     var sources=[];
     for (var key in links) {
@@ -85,15 +90,14 @@ function associator(links, options) {
             } else {
                 var source=sources[currentSource];
                 if (targetsNotAssigned(targets, source.possibleTargets[source.currentTargetPosition])) {
-                    
-                    
                     source.currentTotalTargetsAssigned=(currentSource>0) ? sources[currentSource-1].currentTotalTargetsAssigned:0;
                     source.currentTotalTargetsAssigned+=source.possibleTargets[source.currentTargetPosition].length;
 
-                 //   console.log(currentSource, source.currentTotalTargetsAssigned, (sources.length-currentSource) * maxTarget, numberOfTargets)
-                    
-                    if ((source.currentTotalTargetsAssigned + (sources.length-currentSource-1) * maxTarget) < numberOfTargets) { // can we still assign all the targets ?
-                 //       console.log("Don't check");
+                    // we could check if we used the quota
+                    var targetLength=source.possibleTargets[source.currentTargetPosition].length;
+                    if (maxCounts && currentCounts[targetLength]>=maxCounts[targetLength]) {
+                        badCandidate=true;
+                    } else if ((source.currentTotalTargetsAssigned + (sources.length-currentSource-1) * maxTarget) < numberOfTargets) { // can we still assign all the targets ?
                         badCandidate=true;
                     } else {
                         // CALCULATE SCORE
@@ -107,6 +111,7 @@ function associator(links, options) {
                     badCandidate=true;
                 }
                 if (! badCandidate) {
+
                     setTargetAssignment(sources, targets, currentSource);
                 }
             }
@@ -128,26 +133,30 @@ function associator(links, options) {
         return true;
     }
     
-    function unsetTargetAssignment(sources, targets, currentSource) {
+    function unsetTargetAssignment() {
         var source=sources[currentSource];
         if (! source || ! source.possibleTargets[source.currentTargetPosition]) return;
-        source.possibleTargets[source.currentTargetPosition].forEach(function(id) {
+        var currentTargets=source.possibleTargets[source.currentTargetPosition];
+        currentCounts[currentTargets.length]--;
+        currentTargets.forEach(function(id) {
             if (DEBUG>4) console.log('unset: ',id);
             targets[id].isUsed=false;
         });
     }
 
-    function setTargetAssignment(sources, targets, currentSource) {
+    function setTargetAssignment() {
         var source=sources[currentSource];
         if (! source || ! source.possibleTargets[source.currentTargetPosition]) return;
-        source.possibleTargets[source.currentTargetPosition].forEach(function(id) {
+        var currentTargets=source.possibleTargets[source.currentTargetPosition];
+        currentCounts[currentTargets.length]++;
+        currentTargets.forEach(function(id) {
             if (DEBUG>4) console.log('set: ',id);
             targets[id].isUsed=true;
         });
     }
     
     function debugCurrentTargets(sources, targets) {
-        if (DEBUG>2) console.log('----------- Source current association ----------')
+        console.log('----------- Source current association ----------')
         for (var i=0; i<sources.length; i++) {
             var source=sources[i];
             console.log(
@@ -159,11 +168,12 @@ function associator(links, options) {
         for (var key in targets) {
             if (targets[key].isUsed) usedTargets.push(key);
         }
-        if (DEBUG>1) console.log("Used targets: ", usedTargets);
+        console.log("Used targets: ", usedTargets);
+        console.log("Current counts: ", currentCounts);
     }
 
-    if (DEBUG>0) console.log("Number of operation", numberOperation);
-    if (DEBUG>0) console.log("Total: ",counter)
+    if (DEBUG>0) console.log("Number of operation", result.stat.numberOperation);
+    if (DEBUG>0) console.log("Total: ", result.stat.numberHits)
     return result;
 
 }

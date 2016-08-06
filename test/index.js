@@ -170,6 +170,110 @@ describe('Test the associator', function () {
             });
         result.stat.numberHits.should.equal(1);
     });
+
+    it('Large (10) sequential set with only 10 targets', function () {
+        var result=associator(
+            {
+                a:[1,2],
+                b:[1,2,3],
+                c:[2,3,4],
+                d:[3,4,5],
+                e:[4,5,6],
+                f:[5,6,7],
+                g:[6,7,8],
+                h:[7,8,9],
+                i:[8,9,10],
+                j:[9,10]
+            }, {
+                minTarget: 0,
+                maxTarget: 2
+            });
+        result.stat.numberHits.should.equal(18215); // TODO not sure if correct
+    });
+
+    it('Large (12) sequential set with only 10 targets', function () {
+        // could only work with some scoring problem
+        var result=associator(
+            {
+                a:[1,2],
+                b:[1,2,3],
+                c:[2,3,4],
+                d:[3,4,5],
+                e:[4,5,6],
+                f:[5,6,7],
+                g:[6,7,8],
+                h:[7,8,9],
+                i:[8,9,10],
+                j:[9,10,11],
+                k:[10,11,12],
+                l:[11,12]
+            }, {
+                minTarget: 0,
+                maxTarget: 2,
+                maxCounts: [2,12,2]
+            });
+        result.stat.numberHits.should.equal(37017); // TODO not sure if correct
+    });
+
+    it('Basic example of maxCounts', function () {
+        var result=associator(
+            {
+                a:[1,2],
+                b:[1,2,3],
+                c:[2,3]
+            }, {
+                minTarget: 0,
+                maxTarget: 2,
+                maxCounts: [0,3,0]
+            });
+        result.stat.numberHits.should.equal(3);
+    });
+
+    it('Basic example of maxCounts with 2 possibilities', function () {
+        var result=associator(
+            {
+                a:[1,2],
+                b:[1,2,3],
+                c:[]
+            }, {
+                minTarget: 0,
+                maxTarget: 2,
+                maxCounts: [1,100,1]
+            });
+        result.stat.numberHits.should.equal(3);
+    });
+    
+    it.only('Large (20) sequential set with 20 targets', function () {
+        // could only work with some scoring problem
+        var result=associator(
+            {
+                a:[1],
+                b:[2,3],
+                c:[3,4],
+                d:[4,5],
+                e:[5],
+                f:[6,7],
+                g:[7,8],
+                h:[8],
+                i:[9,10],
+                j:[10,11],
+                k:[10,11,12],
+                l:[11,12,13],
+                m:[12,13,14],
+                n:[13,14,15],
+                o:[14,15,16],
+                p:[15,16,17],
+                q:[16,17,18],
+                r:[17,18,19],
+                s:[18,19,20],
+                t:[19,20],
+            }, {
+                minTarget: 0,
+                maxTarget: 2,
+                maxCounts: [2,100,100]
+            });
+        result.stat.numberHits.should.equal(53392);
+    });
     
     
 });
