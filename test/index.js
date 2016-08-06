@@ -243,7 +243,7 @@ describe('Test the associator', function () {
         result.stat.numberHits.should.equal(3);
     });
     
-    it.only('Large (20) sequential set with 20 targets', function () {
+    it('Large (20) sequential set with 20 targets', function () {
         // could only work with some scoring problem
         var result=associator(
             {

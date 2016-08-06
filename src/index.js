@@ -13,7 +13,7 @@ var combinate = require('./combinate.js')
  * @returns {*} return the top 3 best association
  */
 
-var DEBUG=1;
+var DEBUG=0;
 
 
 function associator(links, options) {
