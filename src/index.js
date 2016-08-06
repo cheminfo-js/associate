@@ -13,13 +13,17 @@ var combinate = require('./combinate.js')
  * @returns {*} return the top 3 best association
  */
 
-var DEBUG=true;
-
+var DEBUG=false;
+var numberOperation=0;
 
 function associator(links, options) {
+
+    
+
     var options=options || {};
     var minTarget=options.minTarget || 0;
     var maxTarget=options.maxTarget || 2;
+    
     
     
     var sources=[];
@@ -27,19 +31,20 @@ function associator(links, options) {
         sources.push(
             {
                 sourceID: key,
+                possibleLinks: links[key],
                 possibleTargets: combinate(links[key], minTarget, maxTarget),
                 currentTargetPosition: 0,
-                currentTotalTargetsAssigned: new Array(sources.length),
-                currentTotalScore:  new Array(sources.length)
+                currentTotalTargetsAssigned: 0,
+                currentTotalScore: 1
             }
         );
     }
     
-    console.log(JSON.stringify(sources,"   "));
+    // console.log(JSON.stringify(sources,"   "));
     
     var targets = {};
     sources.map(function(source) {
-        source.possibleTargets.map(function(targetID) {
+        source.possibleLinks.map(function(targetID) {
             if (! targets[targetID]) {
                 targets[targetID]={
                     isUsed: false
@@ -47,48 +52,114 @@ function associator(links, options) {
             }
         });
     });
+    var numberOfTargets=Object.keys(targets).length;
     
-
+    var currentSource=-1;
     
-    var currentSource=0;
-    var currentTotalAssignedTargets=0;
-    
-    var limit=50;
+    var limit=5000000;
     var counter=0;
-    while (limit-- > 0 && currentSource>=0) {
-        // can we for the current source that we are evaluating still add a child ?
-        while(currentSource<(sources.length-1)) {
+    do {
+        if (currentSource < (sources.length-1)) {
             currentSource++;
-            sources[currentSource].currentTargetPosition=0;
+            sources[currentSource].currentTargetPosition=-1;
         }
-        // we should now deal with this possibility ...
-        //if (DEBUG) debugCurrentTargets(sources);
 
-        // currentTotalTargetsAssigned: new Array(sources.length),
-        // currentTotalScore:  new Array(sources.length)
-
-        counter++;
-        // need to increment the position and go back if we reach the end
+        var badCandidate=false;
         do {
+            numberOperation++;
+            var goingBack=false;
+            // before changing anything we need to unset targets assignment;
+            if (! badCandidate) unsetTargetAssignment(sources, targets, currentSource);
+            badCandidate=false;
             sources[currentSource].currentTargetPosition++;
-        } while (
-            sources[currentSource].currentTargetPosition===sources[currentSource].possibleTargets.length &&
-                --currentSource>=0
-            )
+            // need to recalculate the information for this new hypothesis
+            if (sources[currentSource].currentTargetPosition===sources[currentSource].possibleTargets.length) {
+                // we tried all the possibilities, we need to go back
+                currentSource--;
+                goingBack=true;
+            } else {
+                var source=sources[currentSource];
+                if (targetsNotAssigned(targets, source.possibleTargets[source.currentTargetPosition])) {
+                    
+                    
+                    source.currentTotalTargetsAssigned=(currentSource>0) ? sources[currentSource-1].currentTotalTargetsAssigned:0;
+                    source.currentTotalTargetsAssigned+=source.possibleTargets[source.currentTargetPosition].length;
+
+                 //   console.log(currentSource, source.currentTotalTargetsAssigned, (sources.length-currentSource) * maxTarget, numberOfTargets)
+                    
+                    if ((source.currentTotalTargetsAssigned + (sources.length-currentSource-1) * maxTarget) < numberOfTargets) { // can we still assign all the targets ?
+                 //       console.log("Don't check");
+                        badCandidate=true;
+                    } else {
+                        // CALCULATE SCORE
+                        source.currentTotalScore=(currentSource>0) ? sources[currentSource-1].currentTotalScore:1;
+                        source.currentTotalScore*=0.9;
+                        
+                        // we could still specify it is a bad candidate based on the score for example
+                        badCandidate=false;
+                    }
+                } else {
+                    badCandidate=true;
+                }
+                if (! badCandidate) {
+                    setTargetAssignment(sources, targets, currentSource);
+                }
+            }
+            // console.log('badCandidate: '+badCandidate, 'goingBack: '+goingBack, currentSource);
+        } while ((badCandidate || goingBack) && currentSource>=0);
+
+
+        if (!badCandidate && currentSource === (sources.length-1)) {
+            // we have a candidate !
+            counter++;
+            if (DEBUG) debugCurrentTargets(sources, targets);
+        }
+    } while (limit-- > 0 && currentSource >= 0);
+
+    function targetsNotAssigned(targets, array) {
+        for (var id of array) {
+            if (targets[id].isUsed) return false;
+        }
+        return true;
     }
     
-    console.log("Total: ",counter)
+    function unsetTargetAssignment(sources, targets, currentSource) {
+        var source=sources[currentSource];
+        if (! source || ! source.possibleTargets[source.currentTargetPosition]) return;
+        source.possibleTargets[source.currentTargetPosition].forEach(function(id) {
+            if (DEBUG) console.log('unset: ',id);
+            targets[id].isUsed=false;
+        });
+    }
+
+    function setTargetAssignment(sources, targets, currentSource) {
+        var source=sources[currentSource];
+        if (! source || ! source.possibleTargets[source.currentTargetPosition]) return;
+        source.possibleTargets[source.currentTargetPosition].forEach(function(id) {
+            if (DEBUG) console.log('set: ',id);
+            targets[id].isUsed=true;
+        });
+    }
     
-    function debugCurrentTargets(sources) {
+    function debugCurrentTargets(sources, targets) {
         console.log('----------- Source current association ----------')
         for (var i=0; i<sources.length; i++) {
             var source=sources[i];
-            console.log(source.currentTargetPosition, source.possibleTargets[source.currentTargetPosition]);
+            console.log(
+                source.currentTargetPosition,
+                source.possibleTargets[source.currentTargetPosition],
+                'Total targets assigned:'+source.currentTotalTargetsAssigned);
         }
+        var usedTargets=[];
+        for (var key in targets) {
+            if (targets[key].isUsed) usedTargets.push(key);
+        }
+        console.log("Used targets: ", usedTargets);
     }
 
-    
-    return;
+    console.log("Number of operation", numberOperation);
+    console.log("Total: ",counter)
+    return counter;
     
 
     var sourcePos = {};
@@ -247,6 +318,6 @@ function associator(links, options) {
 
 
 function getScore() {
-    return 100;
+    return 1;
 }
 
