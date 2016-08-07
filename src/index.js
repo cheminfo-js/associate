@@ -22,9 +22,9 @@ function associator(links, options) {
         stat:{
             numberOperation:0,
             numberHits:0
-        }};
+        }
+    };
     
-
     var options=options || {};
     var minTarget=options.minTarget || 0;
     var maxTarget=options.maxTarget || 2;
@@ -33,14 +33,16 @@ function associator(links, options) {
     if (options.maxCounts && options.maxCounts.length!==sizeCounts) {
         throw new Error('The maxCounts parameter must have exactly the length '+sizeCounts);
     }
-    
+    var scoreFunction=options.scoreFunction;
+    var currentBestScore=0;
+
     var currentCounts=new Array(sizeCounts).fill(0);
     
     var sources=[];
     for (var key in links) {
         sources.push(
             {
-                sourceID: key,
+                id: key,
                 possibleLinks: links[key],
                 possibleTargets: combinate(links[key], minTarget, maxTarget),
                 currentTargetPosition: 0,
@@ -101,27 +103,34 @@ function associator(links, options) {
                         badCandidate=true;
                     } else {
                         // CALCULATE SCORE
-                        source.currentTotalScore=(currentSource>0) ? sources[currentSource-1].currentTotalScore:1;
-                        source.currentTotalScore*=0.9;
-                        
-                        // we could still specify it is a bad candidate based on the score for example
-                        badCandidate=false;
+                        if (scoreFunction) {
+                            source.currentTotalScore=(currentSource>0) ? sources[currentSource-1].currentTotalScore:1;
+                            var score=source.currentTotalScore*=scoreFunction(source.id,source.possibleTargets[source.currentTargetPosition]);
+                            if (score<currentBestScore) {
+                                badCandidate=true;
+                            }
+                        }
                     }
                 } else {
                     badCandidate=true;
                 }
                 if (! badCandidate) {
-
                     setTargetAssignment(sources, targets, currentSource);
                 }
             }
             // console.log('badCandidate: '+badCandidate, 'goingBack: '+goingBack, currentSource);
         } while ((badCandidate || goingBack) && currentSource>=0);
-
-
+        
         if (!badCandidate && currentSource === (sources.length-1)) {
             // we have a candidate !
             result.stat.numberHits++;
+            if (scoreFunction) {
+                var score=sources[currentSource].currentTotalScore;
+                if (score > currentBestScore) {
+                    currentBestScore = score;
+                }
+                if (DEBUG>1) console.log("Current best score: "+currentBestScore);
+            }
             if (DEBUG>1) debugCurrentTargets(sources, targets);
         }
     } while (limit-- > 0 && currentSource >= 0);

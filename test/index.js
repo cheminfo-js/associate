@@ -274,6 +274,23 @@ describe('Test the associator', function () {
             });
         result.stat.numberHits.should.equal(53392);
     });
+
+    it.skip('Basic example of scoreFunction', function () {
+        var result=associator(
+            {
+                a:[1,2],
+                b:[1,2,3],
+                c:[2,3]
+            }, {
+                minTarget: 0,
+                maxTarget: 2,
+                scoreFunction: function(source,targets) {
+                    console.log(source, targets);
+                    return Math.pow(0.99, Math.pow(2,targets.length));
+                }
+            });
+    //    result.stat.numberHits.should.equal(3);
+    });
     
     
 });
