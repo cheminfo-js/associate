@@ -1,19 +1,22 @@
 'use strict';
 
-module.exports = associate;
+module.exports = associator;
 
 var combinate = require('./combinate.js')
 
 
 /**
- * 
- * @type {Map}
+ * @param source = {a:[], b:[], c:[], ...}
+ * @param target = [1,2,3,4,5,6]
+ * @param maxTarget integer of max association
+ * @param minTarget integer of min association
+ * @returns {*} return the top 3 best association
  */
 
 var DEBUG=0;
 
 
-function associate(links, options) {
+function associator(links, options) {
 
     var result={
         stat:{
@@ -34,40 +37,34 @@ function associate(links, options) {
     var currentBestScore=0;
 
     var currentCounts=new Array(sizeCounts).fill(0);
-
+    
     var sources=[];
-    links.forEach(function(value, key) {
-        console.log(key);
+    for (var key in links) {
         sources.push(
             {
-                key: key,
-                possibleLinks: value,
-                possibleTargets: combinate(value, minTarget, maxTarget),
+                id: key,
+                possibleLinks: links[key],
+                possibleTargets: combinate(links[key], minTarget, maxTarget),
                 currentTargetPosition: 0,
                 currentTotalTargetsAssigned: 0,
                 currentTotalScore: 1
             }
         );
-    });
-
-
+    }
+    
     // console.log(JSON.stringify(sources,"   "));
     
-    var targets = new Map();
+    var targets = {};
     sources.map(function(source) {
         source.possibleLinks.map(function(targetID) {
-            if (! targets.has(targetID)) {
-                targets.set(targetID,{
+            if (! targets[targetID]) {
+                targets[targetID]={
                     isUsed: false
-                });
+                };
             }
         });
     });
-    var numberOfTargets=targets.size;
-    
-    
-    console.log(targets);
-    return;
+    var numberOfTargets=Object.keys(targets).length;
     
     var currentSource=-1;
     

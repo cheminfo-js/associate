@@ -2,7 +2,7 @@
 
 var process = require('..').process;
 
-describe.only('Test the process', function () {
+describe('Test the process', function () {
     
     var sources=[
         {x:1, y:1},
@@ -17,7 +17,7 @@ describe.only('Test the process', function () {
 
 
 
-    it('La small set', function () {
+    it.only('La small set', function () {
         // could only work with some scoring problem
         var result=process(
             sources,

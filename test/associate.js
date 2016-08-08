@@ -1,11 +1,11 @@
 'use strict';
 
-var associate = require('../src/associate.js');
+var associator = require('./associator.js');
 
-describe('Test the associate', function () {
+describe('Test the associator', function () {
     
     it('no overlapping target', function () {
-        var result=associate({a:[1,2,3], b:[4,5,6], c:[7,8]}, {
+        var result=associator({a:[1,2,3], b:[4,5,6], c:[7,8]}, {
             minTarget: 2,
             maxTarget: 2
         }); 
@@ -13,7 +13,7 @@ describe('Test the associate', function () {
     });
 
     it('with overlapping targets', function () {
-        var result=associate({a:[1,2,3], b:[2,5,6], c:[7,8]}, {
+        var result=associator({a:[1,2,3], b:[2,5,6], c:[7,8]}, {
             minTarget: 2,
             maxTarget: 2
         });
@@ -21,7 +21,7 @@ describe('Test the associate', function () {
     });
 
     it('with no overlapping and one result', function () {
-        var result=associate({a:[1,2], b:[3,4], c:[5,6]}, {
+        var result=associator({a:[1,2], b:[3,4], c:[5,6]}, {
             minTarget: 2,
             maxTarget: 2
         });
@@ -29,7 +29,7 @@ describe('Test the associate', function () {
     });
 
     it('with no overlapping and one result but couple of branches', function () {
-        var result=associate({a:[1,2], b:[3,4]}, {
+        var result=associator({a:[1,2], b:[3,4]}, {
             minTarget: 1,
             maxTarget: 2
         });
@@ -37,7 +37,7 @@ describe('Test the associate', function () {
     });
 
     it('with no overlapping and one result but many branches', function () {
-        var result=associate({a:[1,2], b:[3,4], c:[5,6], d:[7,8]}, {
+        var result=associator({a:[1,2], b:[3,4], c:[5,6], d:[7,8]}, {
             minTarget: 0,
             maxTarget: 2
         });
@@ -45,7 +45,7 @@ describe('Test the associate', function () {
     });
 
     it('with one overlapping and impossible result', function () {
-        var result=associate({a:[1,2], b:[2,3]}, {
+        var result=associator({a:[1,2], b:[2,3]}, {
             minTarget: 2,
             maxTarget: 2
         });
@@ -53,7 +53,7 @@ describe('Test the associate', function () {
     });
 
     it('with 2 overlapping and possible results', function () {
-        var result=associate({a:[1,2], b:[2,3,4]}, {
+        var result=associator({a:[1,2], b:[2,3,4]}, {
             minTarget: 2,
             maxTarget: 2
         });
@@ -62,7 +62,7 @@ describe('Test the associate', function () {
 
 
     it('Large test 5544 possibilities but impossible result', function () {
-        var result=associate({a:[1,2,3,4,5,6,7,8], b:[9,10,11], c:[12,13], d:[14,15,16,17,18,19,20,21,22,23,24,25]}, {
+        var result=associator({a:[1,2,3,4,5,6,7,8], b:[9,10,11], c:[12,13], d:[14,15,16,17,18,19,20,21,22,23,24,25]}, {
             minTarget: 2,
             maxTarget: 2
         });
@@ -70,7 +70,7 @@ describe('Test the associate', function () {
     });
 
     it('Small test with many assignment', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4],
                 b:[1,2,3,4]
@@ -82,7 +82,7 @@ describe('Test the associate', function () {
     });
 
     it('Small test with many assignment and minTarget=0', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4],
                 b:[1,2,3,4]
@@ -94,7 +94,7 @@ describe('Test the associate', function () {
     });
 
     it('Small test with many assignment and 3 min / max', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4,5,6],
                 b:[1,2,3,4,5,6]
@@ -106,7 +106,7 @@ describe('Test the associate', function () {
     });
 
     it('Large test with many assignment and 2 min / max - 45*28*15*6 possibilities', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4,5,6,7,8,9,10],
                 b:[1,2,3,4,5,6,7,8,9,10],
@@ -122,7 +122,7 @@ describe('Test the associate', function () {
     });
 
     it('Large test with many assignment and 0 min / 2 max - 45*28*15*6 possibilities', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4,5,6,7,8,9,10],
                 b:[1,2,3,4,5,6,7,8,9,10],
@@ -139,7 +139,7 @@ describe('Test the associate', function () {
     
 
     it('Small test with 90 assignments and 2 min / max', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2,3,4,5,6],
                 b:[1,2,3,4,5,6],
@@ -152,7 +152,7 @@ describe('Test the associate', function () {
     });
 
     it('Large (10) sequential set', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3,4],
@@ -172,7 +172,7 @@ describe('Test the associate', function () {
     });
 
     it('Large (10) sequential set with only 10 targets', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3],
@@ -193,7 +193,7 @@ describe('Test the associate', function () {
 
     it('Large (12) sequential set with only 10 targets', function () {
         // could only work with some scoring problem
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3],
@@ -216,7 +216,7 @@ describe('Test the associate', function () {
     });
 
     it('Basic example of maxCounts', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3],
@@ -230,7 +230,7 @@ describe('Test the associate', function () {
     });
 
     it('Basic example of maxCounts with 2 possibilities', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3],
@@ -245,7 +245,7 @@ describe('Test the associate', function () {
     
     it('Large (20) sequential set with 20 targets', function () {
         // could only work with some scoring problem
-        var result=associate(
+        var result=associator(
             {
                 a:[1],
                 b:[2,3],
@@ -276,7 +276,7 @@ describe('Test the associate', function () {
     });
 
     it.skip('Basic example of scoreFunction', function () {
-        var result=associate(
+        var result=associator(
             {
                 a:[1,2],
                 b:[1,2,3],
