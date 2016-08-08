@@ -10,7 +10,7 @@ module.exports=function(array, min, max) {
     var results=[];
     for (var i=min; i<=Math.min(max, array.length); i++) {
         if (i===0) {
-            results.push([]);
+            results.push({targets:[], score: 1});
         } else {
             var indexes=new Array(i).fill(0);
             var position=0;
@@ -20,7 +20,7 @@ module.exports=function(array, min, max) {
                     indexes[position]=indexes[position-1]+1;
                 }
                 // we append the result
-                results.push(indexes.map(function(index) {return array[index]}));
+                results.push({targets: indexes.map(function(index) {return array[index]}), score: 1});
                 // we increment the current position and go back in case we reached the maximum
                 do {
                     indexes[position]++;

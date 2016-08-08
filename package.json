@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "keywords": [],
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "author": "Julien Dénéréaz",
   "repository": "cheminfo-js/associate",
   "bugs": {
@@ -21,5 +23,8 @@
     "mocha": "^2.5.1",
     "mocha-better-spec-reporter": "^3.0.2",
     "should": "^9.0.2"
+  },
+  "dependencies": {
+    "ml-matrix": "^2.0.0"
   }
 }
