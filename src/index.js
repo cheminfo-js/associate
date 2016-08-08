@@ -33,7 +33,7 @@ function process(sources, targets, options) {
 
     // now we need to calculate the tree
     for (var matrix of submatrices) {
-        var hierarchy = createHierarchy(matrix);
+        var hierarchy = createHierarchy(matrix, sources, targets);
         associate(hierarchy, options);
     }
 }
