@@ -1,6 +1,6 @@
 'use strict';
 
-var combinate = require('../src/combinate.js');
+var combinate = require('../src/util/combinate.js');
 
 describe('Test combination', function () {
     

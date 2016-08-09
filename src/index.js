@@ -8,7 +8,7 @@ var simpleClustering=require('./util/simpleClustering.js');
 
 
 var associate=require('./associate.js');
-var createHierarchy=require('./createHierarchy.js');
+var createHierarchy=require('./util/createHierarchy.js');
 
 function process(sources, targets, options) {
     
@@ -29,9 +29,7 @@ function process(sources, targets, options) {
     }
 
     // we need now to split in sub matrices in order to accelerate the process
-
-
-
+    // TODO : Waiting for working project
     var submatrices=simpleClustering(associationMatrix, {threshold:0,out:"values"});
     var submatrices=[associationMatrix];
 
@@ -43,7 +41,16 @@ function process(sources, targets, options) {
         var result=associate(hierarchy, sources, targets, options);
         results.push(result);
     }
-    return results;
+    
+    // if we just want to flatten the best matches
+    var best=[];
+    results.forEach(function(result) {
+        for (var key in result.best) {
+            best[key>>0]=result.best[key];
+        }
+    })
+    
+    return best;
 }
 
 

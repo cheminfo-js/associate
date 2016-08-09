@@ -2,7 +2,7 @@
 
 module.exports = associate;
 
-var combinate = require('./combinate.js')
+var combinate = require('./util/combinate.js')
 
 
 /**
@@ -58,9 +58,9 @@ function associate(links, dataSources, dataTargets, options) {
         if (DEBUG>1) console.log("Calculating scores");
         sources.forEach(function(source) {
             source.possibleTargets.forEach(function(target) {
-                var s = dataSources[source.id];
+                var s = (dataSources!==undefined) ? dataSources[source.id] : source.id;
                 var t = target.targets.map(function(target) {
-                    return dataTargets[target];
+                    return dataTargets ? dataTargets[target] : target;
                 });
                 target.score = scoreFunction(s, t);
             });
@@ -147,7 +147,6 @@ function associate(links, dataSources, dataTargets, options) {
                     currentBestScore = score;
                     currentAssociation = {};
                     sources.forEach(function(source) {
-                        console.log(source);
                         currentAssociation[source.id]=source.possibleTargets[source.currentTargetPosition];
                     })
                 }

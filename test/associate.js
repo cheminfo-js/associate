@@ -275,7 +275,7 @@ describe('Test the associate', function () {
         result.stat.numberHits.should.equal(53392);
     });
 
-    it.skip('Basic example of scoreFunction', function () {
+    it('Basic example of scoreFunction', function () {
         var result=associate(
             {
                 a:[1,2],
@@ -285,11 +285,10 @@ describe('Test the associate', function () {
                 minTarget: 0,
                 maxTarget: 2,
                 scoreFunction: function(source,targets) {
-                    console.log(source, targets);
                     return Math.pow(0.99, Math.pow(2,targets.length));
                 }
             });
-    //    result.stat.numberHits.should.equal(3);
+        result.stat.numberHits.should.equal(7);
     });
     
     

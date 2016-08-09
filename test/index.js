@@ -2,7 +2,7 @@
 
 var process = require('..').process;
 
-describe.only('Test the process', function () {
+describe('Global test', function () {
     
     var sources=[
         {x:1, y:1},
@@ -12,12 +12,12 @@ describe.only('Test the process', function () {
         {x:1, y:1},
         {x:1, y:2},
         {x:10, y:10},
-        {x:10, y:12},
+        {x:10, y:11},
     ];
 
 
 
-    it('La small set', function () {
+    it('on very small set', function () {
         // could only work with some scoring problem
 
         var getDistance=function(source, target) {
@@ -44,7 +44,10 @@ describe.only('Test the process', function () {
                 }
             }
         );
-        console.log(JSON.stringify(result, null, "  "));
+        result.length.should.equal(2);
+        result[0].targets.should.eql([0,1]);
+        result[1].score.should.equal(0.5);
+        // console.log(JSON.stringify(result, null, "  "));
     });
 
     
