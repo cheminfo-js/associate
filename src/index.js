@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    process
+    process: process
 };
 
 var simpleClustering=require('./util/simpleClustering.js');
