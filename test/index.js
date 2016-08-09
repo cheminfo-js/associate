@@ -2,7 +2,7 @@
 
 var process = require('..').process;
 
-describe('Test the process', function () {
+describe.only('Test the process', function () {
     
     var sources=[
         {x:1, y:1},
@@ -12,13 +12,18 @@ describe('Test the process', function () {
         {x:1, y:1},
         {x:1, y:2},
         {x:10, y:10},
-        {x:10, y:11},
+        {x:10, y:12},
     ];
 
 
 
-    it.only('La small set', function () {
+    it('La small set', function () {
         // could only work with some scoring problem
+
+        var getDistance=function(source, target) {
+            return Math.sqrt(Math.pow(Math.abs(source.x-target.x),2) + Math.pow(Math.abs(source.y-target.y),2));
+        };
+        
         var result=process(
             sources,
             targets,
@@ -27,17 +32,19 @@ describe('Test the process', function () {
                 maxTarget: 2,
                 maxCounts: [2,12,2],
                 candidateFunction: function(source,target) {
-                    var distance=Math.sqrt(Math.pow(Math.abs(source.x-target.x),2) + Math.pow(Math.abs(source.y-target.y),2));
-                    console.log(distance);
-                    return distance<2;
+                    var distance=getDistance(source, target);
+                    return distance<100;
                 },
                 scoreFunction: function(source,targets) {
-                    console.log(source, targets);
-                    return Math.pow(0.99, Math.pow(2,targets.length));
+                    var score=1;
+                    for (var target of targets) {
+                        score*=1/(getDistance(source, target)+1);
+                    }
+                    return score;
                 }
             }
         );
-        console.log(result);
+        console.log(JSON.stringify(result, null, "  "));
     });
 
     

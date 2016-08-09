@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = associator;
+module.exports = associate;
 
 var combinate = require('./combinate.js')
 
@@ -16,14 +16,8 @@ var combinate = require('./combinate.js')
 var DEBUG=0;
 
 
-function associator(links, options) {
-
-    var result={
-        stat:{
-            numberOperation:0,
-            numberHits:0
-        }
-    };
+function associate(links, dataSources, dataTargets, options) {
+    if (!dataTargets) options=dataSources;
     
     var options=options || {};
     var minTarget=options.minTarget || 0;
@@ -34,10 +28,17 @@ function associator(links, options) {
         throw new Error('The maxCounts parameter must have exactly the length '+sizeCounts);
     }
     var scoreFunction=options.scoreFunction;
-    var currentBestScore=0;
 
-    var currentCounts=new Array(sizeCounts).fill(0);
+    var result={
+        stat:{
+            numberOperation:0,
+            numberHits:0
+        }
+    };
     
+    var currentBestScore=0;
+    var currentAssociation;
+    var currentCounts=new Array(sizeCounts).fill(0);
     var sources=[];
     for (var key in links) {
         sources.push(
@@ -51,6 +52,23 @@ function associator(links, options) {
             }
         );
     }
+
+    // we will calculate the scores for each targets
+    if (scoreFunction) {
+        if (DEBUG>1) console.log("Calculating scores");
+        sources.forEach(function(source) {
+            source.possibleTargets.forEach(function(target) {
+                var s = dataSources[source.id];
+                var t = target.targets.map(function(target) {
+                    return dataTargets[target];
+                });
+                target.score = scoreFunction(s, t);
+            });
+            source.possibleTargets.sort((a,b) => b.score-a.score);
+        });
+    }
+
+
     
     // console.log(JSON.stringify(sources,"   "));
     
@@ -69,7 +87,6 @@ function associator(links, options) {
     var currentSource=-1;
     
     var limit=5000000;
-    var counter=0;
     do {
         if (currentSource < (sources.length-1)) {
             currentSource++;
@@ -121,20 +138,33 @@ function associator(links, options) {
             // console.log('badCandidate: '+badCandidate, 'goingBack: '+goingBack, currentSource);
         } while ((badCandidate || goingBack) && currentSource>=0);
         
-        if (!badCandidate && currentSource === (sources.length-1)) {
+        if (! badCandidate && currentSource === (sources.length-1)) {
             // we have a candidate !
             result.stat.numberHits++;
             if (scoreFunction) {
                 var score=sources[currentSource].currentTotalScore;
                 if (score > currentBestScore) {
                     currentBestScore = score;
+                    currentAssociation = {};
+                    sources.forEach(function(source) {
+                        console.log(source);
+                        currentAssociation[source.id]=source.possibleTargets[source.currentTargetPosition];
+                    })
                 }
                 if (DEBUG>1) console.log("Current best score: "+currentBestScore);
             }
             if (DEBUG>1) debugCurrentTargets(sources, targets);
         }
     } while (limit-- > 0 && currentSource >= 0);
+    result.stat.score=currentBestScore;
+    result.best=currentAssociation;
 
+    if (DEBUG>0) console.log("Number of operation", result.stat.numberOperation);
+    if (DEBUG>0) console.log("Total: ", result.stat.numberHits);
+    
+    return result;
+    
+    
     function targetsNotAssigned(targets, array) {
         for (var id of array) {
             if (targets[id].isUsed) return false;
@@ -180,17 +210,7 @@ function associator(links, options) {
         console.log("Used targets: ", usedTargets);
         console.log("Current counts: ", currentCounts);
     }
-
-    if (DEBUG>0) console.log("Number of operation", result.stat.numberOperation);
-    if (DEBUG>0) console.log("Total: ", result.stat.numberHits)
-    return result;
-
 }
 
 
-
-
-function getScore() {
-    return 1;
-}
 

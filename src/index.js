@@ -4,6 +4,8 @@ module.exports = {
     process
 };
 
+var simpleClustering=require('./util/simpleClustering.js');
+
 
 var associate=require('./associate.js');
 var createHierarchy=require('./createHierarchy.js');
@@ -29,13 +31,19 @@ function process(sources, targets, options) {
     // we need now to split in sub matrices in order to accelerate the process
 
 
+
+    var submatrices=simpleClustering(associationMatrix, {threshold:0,out:"values"});
     var submatrices=[associationMatrix];
 
+    
+    var results=[];
     // now we need to calculate the tree
     for (var matrix of submatrices) {
         var hierarchy = createHierarchy(matrix);
-        associate(hierarchy, options);
+        var result=associate(hierarchy, sources, targets, options);
+        results.push(result);
     }
+    return results;
 }
 
 
