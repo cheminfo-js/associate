@@ -60,40 +60,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    process: process
 	};
 
-	var simpleClustering=__webpack_require__(2);
+	var split=__webpack_require__(2);
 
 
 	var associate=__webpack_require__(3);
-	var createHierarchy=__webpack_require__(5);
+
 
 	function process(sources, targets, options) {
-	    
-	    // we will construct a matrix with the valud sources / targerts
-	    var associationMatrix=new Array();
-	    for (var i=0; i<sources.length; i++) {
-	        associationMatrix.push(new Array(targets.length).fill(0))
-	    };
-	    
+
+	    // we create the globalHierarchy
+	    var globalHierarchy = {};
 	    for (var i=0; i<sources.length; i++) {
 	        var source=sources[i];
+	        globalHierarchy[i]=[];
 	        for (var j=0; j<targets.length; j++) {
 	            var target=targets[j];
 	            if (! options.candidateFunction || options.candidateFunction(source, target)) {
-	                associationMatrix[i][j]=((i+1)<<16)+(j+1);
+	                globalHierarchy[i].push(j);
 	            }
 	        }
 	    }
-
-	    // we need now to split in sub matrices in order to accelerate the process
-	    // TODO : Waiting for working project
-	    var submatrices=simpleClustering(associationMatrix, {threshold:0,out:"values"});
-	    var submatrices=[associationMatrix];
-
+	    
+	    // we can split it into independant hierarchies
+	    var hierarchies=split(globalHierarchy);
 	    
 	    var results=[];
 	    // now we need to calculate the tree
-	    for (var matrix of submatrices) {
-	        var hierarchy = createHierarchy(matrix);
+	    for (var hierarchy of hierarchies) {
 	        var result=associate(hierarchy, sources, targets, options);
 	        results.push(result);
 	    }
@@ -146,45 +139,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	} ())
 	function runTimeout(fun) {
 	    if (cachedSetTimeout === setTimeout) {
-	        //normal enviroments in sane situations
 	        return setTimeout(fun, 0);
+	    } else {
+	        return cachedSetTimeout.call(null, fun, 0);
 	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedSetTimeout(fun, 0);
-	    } catch(e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-	            return cachedSetTimeout.call(null, fun, 0);
-	        } catch(e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-	            return cachedSetTimeout.call(this, fun, 0);
-	        }
-	    }
-
-
 	}
 	function runClearTimeout(marker) {
 	    if (cachedClearTimeout === clearTimeout) {
-	        //normal enviroments in sane situations
-	        return clearTimeout(marker);
+	        clearTimeout(marker);
+	    } else {
+	        cachedClearTimeout.call(null, marker);
 	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedClearTimeout(marker);
-	    } catch (e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-	            return cachedClearTimeout.call(null, marker);
-	        } catch (e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-	            return cachedClearTimeout.call(this, marker);
-	        }
-	    }
-
-
-
 	}
 	var queue = [];
 	var draining = false;
@@ -283,119 +248,51 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 2 */
 /***/ function(module, exports) {
 
-	/**
-	 * Created by acastillo on 8/8/16.
-	 */
+	
+	module.exports = function split(originalSources) {
 
-	// should use directly from the web : https://github.com/mljs/simple-clustering/blob/6ac43e180024e1efc6a5edfdace6a53d06513afd/src/index.js
-
-
-
-	'use strict';
-
-	const defOptions = {
-	    threshold:0,
-	    out:"assignment"
-	};
-	//TODO Consider a matrix of distances too
-	module.exports = function fullClusterGenerator(conMat, opt) {
-	    const options = Object.assign({}, defOptions, opt);
-	    var clList, i, j, k;
-	    if(typeof conMat[0] === "number"){
-	        clList = fullClusterGeneratorVector(conMat);
-	    }
-	    else{
-	        if(typeof conMat[0] === "object"){
-	            var nRows = conMat.length;
-	            var conn = new Array(nRows*(nRows+1)/2);
-	            var index = 0;
-	            for(var i=0;i<nRows;i++){
-	                for(var j=i;j<nRows;j++){
-	                    if(conMat[i][j]>options.threshold)
-	                        conn[index++]= 1;
-	                    else
-	                        conn[index++]= 0;
-	                }
+	    var targetToSources=new Map();
+	    // we create an inverted graph
+	    for (var key in originalSources) {
+	        originalSources[key].forEach(function(target) {
+	            if (! targetToSources.has(target)) {
+	                targetToSources.set(target, []);
 	            }
-	            clList = fullClusterGeneratorVector(conn);
-	        }
+	            targetToSources.get(target).push(key);
+	        })
 	    }
-	    if (options.out === "indexes" || options.out === "values") {
-	        var result = new Array(clList.length);
-	        for(i=0;i<clList.length;i++){
-	            result[i] = [];
-	            for(j=0;j<clList[i].length;j++){
-	                if(clList[i][j] != 0){
-	                    result[i].push(j);
-	                }
-	            }
-	        }
-	        if (options.out === "values") {
-	            var resultAsMatrix = new Array(result.length);
-	            for (i = 0; i<result.length;i++){
-	                resultAsMatrix[i]=new Array(result[i].length);
-	                for(j = 0; j < result[i].length; j++){
-	                    resultAsMatrix[i][j]=new Array(result[i].length);
-	                    for(k = 0; k < result[i].length; k++){
-	                        resultAsMatrix[i][j][k]=conMat[result[i][j]][result[i][k]];
+
+	    var trees=[];
+	    var queue=[];
+	    var queuePointer=0;
+	    // console.log('targetsToSource', targetToSources);
+
+	    while (targetToSources.size>0) {
+	        var tree={};
+	        trees.push(tree);
+	        queue.push(targetToSources.keys().next().value);
+	        do {
+	            var currentTarget=queue[queuePointer++];
+	            // console.log('Queue', queue, queuePointer);
+	            // console.log('Current target', currentTarget);
+	            var currentSources=targetToSources.get(currentTarget);
+	            targetToSources.delete(currentTarget);
+	            currentSources.forEach(function(source) {
+	                tree[source]=originalSources[source];
+	                originalSources[source].forEach(function(target) {
+	                    if (targetToSources.has(target)) {
+	                        // add to queue
+	                        if (queue.indexOf(target)===-1) {
+	                            queue.push(target);
+	                        }
 	                    }
-	                }
-	            }
-	            return resultAsMatrix;
-	        }
-	        else{
-	            return result;
-	        }
-	    }
+	                });
+	            });
 
-	    return clList;
-
-	}
-
-	function fullClusterGeneratorVector(conn){
-	    var nRows = Math.sqrt(conn.length*2+0.25)-0.5;
-	    var clusterList = [];
-	    var available = new Array(nRows);
-	    var remaining = nRows, i=0;
-	    var cluster = [];
-	    //Mark all the elements as available
-	    for(i=nRows-1;i>=0;i--){
-	        available[i]=1;
+	        } while (queue.length>queuePointer)
 	    }
-	    var nextAv=-1;
-	    var toInclude = [];
-	    while(remaining>0){
-	        if(toInclude.length===0){
-	            //If there is no more elements to include. Start a new cluster
-	            cluster = new Array(nRows);
-	            for(i = 0;i < nRows ;i++)
-	                cluster[i]=0;
-	            clusterList.push(cluster);
-	            for(nextAv = 0;available[nextAv]==0;nextAv++){};
-	        }
-	        else{
-	            nextAv=toInclude.splice(0,1);
-	        }
-	        cluster[nextAv]=1;
-	        available[nextAv]=0;
-	        remaining--;
-	        //Copy the next available row
-	        var row = new Array(nRows);
-	        for( i = 0;i < nRows;i++){
-	            var c=Math.max(nextAv,i);
-	            var r=Math.min(nextAv,i);
-	            //The element in the conn matrix
-	            //console.log("index: "+r*(2*nRows-r-1)/2+c)
-	            row[i]=conn[r*(2*nRows-r-1)/2+c];
-	            //There is new elements to include in this row?
-	            //Then, include it to the current cluster
-	            if(row[i]==1&&available[i]==1&&cluster[i]==0){
-	                toInclude.push(i);
-	                cluster[i]=1;
-	            }
-	        }
-	    }
-	    return clusterList;
+	    
+	    return trees;
 	}
 
 /***/ },
@@ -658,27 +555,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return results;
 	};
 
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	module.exports = function createHierarchy(matrix) {
-	    var results={};
-	    for (var i=0; i<matrix.length; i++) {
-	        for (var j=0; j<matrix[0].length; j++) {
-	            if (matrix[i][j]>0) {
-	                var row=(matrix[i][j] >> 16) - 1;
-	                var column=(matrix[i][j] & 0b1111111111111111) - 1;
-	                if (! results[row]) {
-	                    results[row]=[];
-	                }
-	                results[row].push(column);
-	            }
-	        }
-	    }
-	    return results;
-	}
 
 /***/ }
 /******/ ])
