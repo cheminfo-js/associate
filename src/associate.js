@@ -40,6 +40,7 @@ function associate(links, dataSources, dataTargets, options) {
     var currentAssociation;
     var currentCounts=new Array(sizeCounts).fill(0);
     var sources=[];
+    
     for (var key in links) {
         sources.push(
             {
@@ -129,6 +130,9 @@ function associate(links, dataSources, dataTargets, options) {
                         }
                     }
                 } else {
+                    // it is not because all the targets are assigned that the problem is finished !
+                    // only if the minTarget>0
+                    // TODO and optimize : if (minTarget>0) 
                     badCandidate=true;
                 }
                 if (! badCandidate) {

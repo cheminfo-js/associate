@@ -1,6 +1,7 @@
 
 module.exports = function split(originalSources) {
-
+    var trees=[];
+    
     var targetToSources=new Map();
     // we create an inverted graph
     for (var key in originalSources) {
@@ -10,13 +11,22 @@ module.exports = function split(originalSources) {
             }
             targetToSources.get(target).push(key);
         })
+
+        // we will add as different cluster the unlink targets
+        if (originalSources[key].length===0) {
+            var tree={};
+            tree[key]=[];
+            trees.push(tree);
+        }
     }
 
-    var trees=[];
+  
     var queue=[];
     var queuePointer=0;
     // console.log('targetsToSource', targetToSources);
 
+
+    
     while (targetToSources.size>0) {
         var tree={};
         trees.push(tree);
@@ -41,6 +51,6 @@ module.exports = function split(originalSources) {
 
         } while (queue.length>queuePointer)
     }
-    
+
     return trees;
 }

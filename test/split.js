@@ -52,4 +52,14 @@ describe('Split unconnected graphs', function () {
             });
         results.length.should.equal(3);
     });
+
+    it('Empty tree', function () {
+        // could only work with some scoring problem
+        var results=split(
+            {
+                a:[1],
+                b:[]
+            });
+        results.length.should.equal(2);
+    });
 });
